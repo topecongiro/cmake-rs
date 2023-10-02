@@ -1063,8 +1063,8 @@ impl Default for Version {
 
 fn run(cmd: &mut Command, program: &str) {
     eprintln!("running: {:?}", cmd);
-    let status = match cmd.status() {
-        Ok(status) => status,
+    let output = match cmd.output() {
+        Ok(output) => output,
         Err(ref e) if e.kind() == ErrorKind::NotFound => {
             fail(&format!(
                 "failed to execute command: {}\nis `{}` not installed?",
@@ -1073,10 +1073,12 @@ fn run(cmd: &mut Command, program: &str) {
         }
         Err(e) => fail(&format!("failed to execute command: {}", e)),
     };
-    if !status.success() {
+    if !output.status.success() {
+        eprintln!("{}", String::from_utf8_lossy(&output.stdout));
+        eprintln!("{}", String::from_utf8_lossy(&output.stderr));
         fail(&format!(
             "command did not execute successfully, got: {}",
-            status
+            output.status,
         ));
     }
 }
